@@ -3,4 +3,4 @@ tensorflow
 numpy
 Pillow
 scipy
-gunicorngit add requirements.txt
+gunicorn
