@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digit Recognizer</title> <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 50px;
+        }
+        /* Typo: 'predictioResult' fixed to 'predictionResult' to match JS and HTML IDs */
+        #predictionResult {
+            font-size: 2em;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        /* Typo: 'max-width: 200x' fixed to 'max-width: 200px' */
+        #imagePreview {
+            max-width: 200px;
+            max-height: 200px;
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            display: none;
+        }
+
+        /* --- Optional: Add some basic styling for the file input itself --- */
+        /* This makes the file input look like a button */
+        .file-input-container {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            margin-top: 20px; /* Adjust spacing */
+            margin-bottom: 10px; /* Space between input and preview */
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 1em;
+            border: none;
+        }
+
+        .file-input-container input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Handwritten Digit Recognizer</h1>
+    <p>Upload an image of a single digit (0-9).</p>
+
+    <div class="file-input-container">
+        Choose Image
+        <input type="file" id="imageInput" accept="image/*">
+    </div>
+
+    <img id="imagePreview" src="#" alt="Image Preview">
+    <button id="predictButton" style="margin-top: 20px;">Predict Digit</button>
+
+    <div id="predictionResult"></div>
+
+    <script>
+        // JavaScript Fixes:
+        // 1. Typo: 'imageImput' fixed to 'imageInput'
+        // 2. Typo: 'documnet' fixed to 'document'
+        // 3. Typo: 'predictionButtom' fixed to 'predictButton' to match HTML ID
+
+        const imageInput = document.getElementById('imageInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const predictButton = document.getElementById('predictButton'); // Fixed ID here
+        const predictionResult = document.getElementById('predictionResult'); // Fixed ID here
+
+        let selectedFile = null;
+
+        imageInput.addEventListener('change', function(event) {
+            selectedFile = event.target.files[0];
+            if (selectedFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                    predictionResult.textContent = '';  // Clear previous result
+                }
+                reader.readAsDataURL(selectedFile);
+            } else {
+                imagePreview.style.display = 'none';
+                imagePreview.src = '#'
+            }
+        });
+
+        predictButton.addEventListener('click', function() {
+            if (!selectedFile) {
+                predictionResult.textContent = 'Please select an image first.';
+                return;
+            }
+
+            predictionResult.textContent = 'Predicting...';
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.digit !== undefined) {
+                    predictionResult.textContent = `Predicted Digit: ${data.digit}`;
+                } else if (data.error) {
+                    predictionResult.textContent = `Error: ${data.error}`;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                predictionResult.textContent = 'An error occurred during prediction.'; // Fixed typo: 'occured' to 'occurred'
+            });
+        });
+    </script>
+</body>
+</html>
